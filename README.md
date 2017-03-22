@@ -8,4 +8,9 @@
 
 This package is an MDP formulation for 2D autnomous racing simulation. You'll also need [AutomotiveDrivingModels.jl](https://github.com/tawheeler/AutomotiveDrivingModels.jl) and [AutoViz.jl](https://github.com/tawheeler/AutoViz.jl) from Tim Wheeler.
 
+To install the package and play around with it, use Pkg.clone():
+
+  Pkg.clone(git://github.com/kylejbrown17/LevelKRacing.jl.git)
+
+
 You can find the documentation [here](http://nbviewer.jupyter.org/github/kylejbrown17/LevelKRacing.jl/blob/master/doc/RacingDemos.ipynb), or download it directly from the doc folder.
