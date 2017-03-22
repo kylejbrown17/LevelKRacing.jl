@@ -8,4 +8,4 @@
 
 This package is an MDP formulation for 2D autnomous racing simulation. You'll also need [AutomotiveDrivingModels.jl](https://github.com/tawheeler/AutomotiveDrivingModels.jl) and [AutoViz.jl](https://github.com/tawheeler/AutoViz.jl) from Tim Wheeler.
 
-You can find the documentation [here]()
+You can find the documentation [here](), or download it directly from the doc folder.
