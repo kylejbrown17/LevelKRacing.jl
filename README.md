@@ -15,3 +15,5 @@ To install the package and play around with it, use julia's Pkg.clone() function
 You'll also need [AutomotiveDrivingModels.jl](https://github.com/tawheeler/AutomotiveDrivingModels.jl) and [AutoViz.jl](https://github.com/tawheeler/AutoViz.jl) from Tim Wheeler.
 
 You can find the documentation [here](http://nbviewer.jupyter.org/github/kylejbrown17/LevelKRacing.jl/blob/master/doc/RacingDemos.ipynb), or download it directly from the doc folder. 
+
+![LevelKRacing](image.png)
