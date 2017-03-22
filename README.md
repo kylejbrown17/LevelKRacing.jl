@@ -6,4 +6,6 @@
 
 [![codecov.io](http://codecov.io/github/kylejbrown17/LevelKRacing.jl/coverage.svg?branch=master)](http://codecov.io/github/kylejbrown17/LevelKRacing.jl?branch=master)
 
-This package is for 2D autnomous racing simulation. You'll also need [AutomotiveDrivingModels.jl](https://github.com/tawheeler/AutomotiveDrivingModels.jl) and [AutoViz.jl](https://github.com/tawheeler/AutoViz.jl) from Tim Wheeler.
+This package is an MDP formulation for 2D autnomous racing simulation. You'll also need [AutomotiveDrivingModels.jl](https://github.com/tawheeler/AutomotiveDrivingModels.jl) and [AutoViz.jl](https://github.com/tawheeler/AutoViz.jl) from Tim Wheeler.
+
+You can find the documentation [here]()
