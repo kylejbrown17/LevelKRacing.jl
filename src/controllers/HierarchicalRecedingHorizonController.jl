@@ -74,7 +74,7 @@ function kdProject(x,y,θ,tree,roadway,hrhc)
 end
 
 # type Hierarchical Receding Horizion Controller
-type HRHC <: DriverModel{NextState}
+type HRHC <: DriverModel{AccelDesAng}
 #     action_context::IntegratedContinuous
     car_ID::Int
     v_map
@@ -107,7 +107,7 @@ type HRHC <: DriverModel{NextState}
     # maximum deviation from center of track (if |t| > T_MAX, car is out of bounds)
     T_MAX::Float64
     # Action = Next State
-    action::NextState
+    action::VehicleState
     function HRHC(car_ID::Int,roadway;
         car_length::Float64=4.8,
         wheel_base::Float64=4.4,
