@@ -4,7 +4,7 @@ using AutomotiveDrivingModels
 using AutoViz
 using NearestNeighbors
 
-import AutomotiveDrivingModels: get_actions!, observe!, action_context, get_name
+import AutomotiveDrivingModels: get_actions!, observe!, get_name
 import Base.rand
 import PyPlot
 
