@@ -587,7 +587,7 @@ function AutomotiveDrivingModels.observe!(hrhc::HRHC, scene::Scene, roadway::Roa
     hrhc.v = hrhc.v_range[hrhc.v_cmd] # next v
 
     next_state = VehicleState(VecSE2(trajectory[1,1:3]),roadway,hrhc.v)
-    hrhc.action = NextState(next_state) # action
+    hrhc.action = next_state # action
 end
 AutomotiveDrivingModels.get_name(::HRHC) = "HRHC"
 # AutomotiveDrivingModels.action_context(driver::HRHC) = driver.action_context # AutomotiveDrivingModels.action_context
