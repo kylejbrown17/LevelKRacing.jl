@@ -74,8 +74,8 @@ function kdProject(x,y,θ,tree,roadway,hrhc)
 end
 
 # type Hierarchical Receding Horizion Controller
-type HRHC <: DriverModel{NextState, IntegratedContinuous}
-    action_context::IntegratedContinuous
+type HRHC <: DriverModel{NextState}
+#     action_context::IntegratedContinuous
     car_ID::Int
     v_map
     δ_map
@@ -108,7 +108,7 @@ type HRHC <: DriverModel{NextState, IntegratedContinuous}
     T_MAX::Float64
     # Action = Next State
     action::NextState
-    function HRHC(car_ID::Int,roadway,context;
+    function HRHC(car_ID::Int,roadway;
         car_length::Float64=4.8,
         wheel_base::Float64=4.4,
         car_width::Float64=2.5,
@@ -156,7 +156,7 @@ type HRHC <: DriverModel{NextState, IntegratedContinuous}
         hrhc.δ_cmd = Int((length(hrhc.δ_range) - 1)/2)
         hrhc.curve_ind=1
         hrhc.Δs=roadway.segments[1].lanes[1].curve[2].s-roadway.segments[1].lanes[1].curve[1].s
-        hrhc.action_context=context
+#         hrhc.action_context=context
         hrhc.action = NextState(VehicleState(VecSE2(0,0,0),0.0))
 
         # calculate semimajor axes of bounding ellipse with minimal area (for collision checking)
@@ -590,7 +590,7 @@ function AutomotiveDrivingModels.observe!(hrhc::HRHC, scene::Scene, roadway::Roa
     hrhc.action = NextState(next_state) # action
 end
 AutomotiveDrivingModels.get_name(::HRHC) = "HRHC"
-AutomotiveDrivingModels.action_context(driver::HRHC) = driver.action_context # AutomotiveDrivingModels.action_context
+# AutomotiveDrivingModels.action_context(driver::HRHC) = driver.action_context # AutomotiveDrivingModels.action_context
 Base.rand(hrhc::HRHC) = hrhc.action
 
 # Plotting functions
