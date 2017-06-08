@@ -74,7 +74,7 @@ function kdProject(x,y,θ,tree,roadway,hrhc)
 end
 
 # type Hierarchical Receding Horizion Controller
-type HRHC <: DriverModel{AccelDesAng}
+type HRHC <: DriverModel{AccelDesang}
 #     action_context::IntegratedContinuous
     car_ID::Int
     v_map
