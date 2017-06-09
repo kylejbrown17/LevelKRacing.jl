@@ -571,7 +571,7 @@ function AutomotiveDrivingModels.observe!(hrhc::HRHC, scene::Scene, roadway::Roa
                 objective[index] = Inf
             else
                 action_selected=true
-                updateObstacleMap!(obstacleMap, k_level, hrhc.car_ID, trajectory)
+                # updateObstacleMap!(obstacleMap, k_level, hrhc.car_ID, trajectory)
                 if k_level != hrhc.k # only assign commands for the given k_level
                     return # do not update the action
                 end
