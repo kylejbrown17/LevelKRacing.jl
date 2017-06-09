@@ -199,8 +199,8 @@ function generateMotionMap(v_min,v_max,a_step,δ_max,δ_step,wheel_base,h,μ,Δt
     v_step = a_step*Δt
     v_range = linspace(v_min,v_max,round(v_max/v_step))
     δ_range = linspace(-δ_max,δ_max,2*round((δ_max)/δ_step)+1)
-    δ_range = (1/maximum(δ_range))*δ_range.*abs(δ_range) # concentrate toward the middle
-    R_range = wheel_base./tan(δ_range)
+    δ_range = (1/maximum(δ_range))*δ_range.*abs.(δ_range) # concentrate toward the middle
+    R_range = wheel_base./tan.(δ_range)
     # a_range = [-1,0,1]
     motion_map = Dict()
     v_map = Dict()
@@ -212,7 +212,7 @@ function generateMotionMap(v_min,v_max,a_step,δ_max,δ_step,wheel_base,h,μ,Δt
         δ_map[v_idx] = zeros(Int,length(a_range),length(δ_range))
         for a_idx in 1:length(a_range)
             Δv_idx = a_range[a_idx]
-            tire_force = sqrt(((v^2)./abs(R_range)).^2 + (Δv_idx*a_step)^2)
+            tire_force = sqrt(((v^2)./abs.(R_range)).^2 + (Δv_idx*a_step)^2)
             if v_idx + Δv_idx >= 1 && v_idx + Δv_idx <= length(v_range)
                 v_map[v_idx][a_idx,:] = Int(v_idx + Δv_idx)# v_range[v_idx+Δv_idx]
             else
@@ -226,9 +226,9 @@ function generateMotionMap(v_min,v_max,a_step,δ_max,δ_step,wheel_base,h,μ,Δt
                 end
             end
             #δ_map[v_idx][a_idx,:] = δ_range.*(tire_force .< μ*g) +
-             #   maximum(abs(δ_range[tire_force .< μ*g])).*sign(δ_range).*(tire_force .>= μ*g)
+             #   maximum(abs.(δ_range[tire_force .< μ*g])).*sign(δ_range).*(tire_force .>= μ*g)
             δ_map[v_idx][a_idx,:] = [i for i in 1:length(δ_range)].*(tire_force .< μ*g) +
-            indmax(abs(δ_range).*(tire_force .< μ*g)).*(tire_force .>= μ*g).*-sign(δ_range) +
+            indmax(abs.(δ_range).*(tire_force .< μ*g)).*(tire_force .>= μ*g).*-sign(δ_range) +
             (length(δ_range)+1).*(sign(δ_range) .> 0).*(tire_force .>= μ*g)
         end
     end
@@ -241,12 +241,12 @@ function generateMotionMap(v_min,v_max,a_step,δ_max,δ_step,wheel_base,h,μ,Δt
         level_δ_idx = copy(δ_map[v_idx])
         Δθ = zeros(length(a_range),length(δ_range))
         for i in 1:h
-            radius = wheel_base./tan(δ_range[level_δ_idx])
+            radius = wheel_base./tan.(δ_range[level_δ_idx])
             Δs = ((v_range[v_idx] + v_range[level_v_idx])./2.0)*Δt
             Δθ = Δs./radius
-            ΔX = abs(radius) .* sin(abs(Δθ))
+            ΔX = abs.(radius) .* sin.(abs.(Δθ))
             ΔX[:,Int((length(δ_range)-1)/2)+1] = Δs[:,Int((length(δ_range)-1)/2)+1]
-            ΔY = radius.*(1 - cos(Δθ))
+            ΔY = radius.*(1 - cos.(Δθ))
             ΔY[:,Int((length(δ_range)-1)/2)+1] = 0
             if i == 1
                 motion_map[v_idx][:,:,i,1] = ΔX
@@ -254,9 +254,9 @@ function generateMotionMap(v_min,v_max,a_step,δ_max,δ_step,wheel_base,h,μ,Δt
                 motion_map[v_idx][:,:,i,3] = Δθ
             else
                 motion_map[v_idx][:,:,i,1] = motion_map[v_idx][:,:,i-1,1] +
-                    ΔX.*cos(motion_map[v_idx][:,:,i-1,3]) - ΔY.*sin(motion_map[v_idx][:,:,i-1,3])
+                    ΔX.*cos.(motion_map[v_idx][:,:,i-1,3]) - ΔY.*sin.(motion_map[v_idx][:,:,i-1,3])
                 motion_map[v_idx][:,:,i,2] = motion_map[v_idx][:,:,i-1,2] +
-                    ΔX.*sin(motion_map[v_idx][:,:,i-1,3]) + ΔY.*cos(motion_map[v_idx][:,:,i-1,3])
+                    ΔX.*sin.(motion_map[v_idx][:,:,i-1,3]) + ΔY.*cos.(motion_map[v_idx][:,:,i-1,3])
                 motion_map[v_idx][:,:,i,3] = Δθ + motion_map[v_idx][:,:,i-1,3]  # + motion_map[v_idx][:,:,i-1,3]
             end
             for j in 1:length(level_v_idx) # update to next velocity
@@ -333,7 +333,7 @@ function screenTrajectory(trajectory, obstacleMap, scene, roadway, hrhc, tree, k
         θ = trajectory[i,3]
         s,t,ϕ = kdProject(x,y,θ,tree,roadway,hrhc)
 
-        if abs(t) > hrhc.T_MAX
+        if abs.(t) > hrhc.T_MAX
             out_of_bounds=true
             return out_of_bounds
         end
@@ -373,7 +373,7 @@ function screenTrajectory(trajectory, obstacleMap, scene, roadway, hrhc, tree, k
     #                     end
     #                     # R is less than hrhc.car_length
     #                     ψ = atan2(ΔY[idx],ΔX[idx]) - Δθ[idx]
-    #                     r = W*L/sqrt((L*sin(ψ))^2 + (W*cos(ψ))^2) # radius of ellipse at given angle
+    #                     r = W*L/sqrt((L*sin.(ψ))^2 + (W*cos.(ψ))^2) # radius of ellipse at given angle
     #                     if R[idx]-r < W*L/8 # collision
     #                         collision_flag = true
     #                         return collision_flag
@@ -390,8 +390,8 @@ function getSuccessorStates(ΔXYθ, car_ID, h, scene::Scene)
     """ gets legal successor_states from motion primitives library """
     pos = scene[car_ID].state.posG # global x,y,z of car
 
-    ΔX = ΔXYθ[:,:,h,1] * cos(pos.θ) + ΔXYθ[:,:,h,2] * -sin(pos.θ)
-    ΔY = ΔXYθ[:,:,h,1] * sin(pos.θ) + ΔXYθ[:,:,h,2] * cos(pos.θ)
+    ΔX = ΔXYθ[:,:,h,1] * cos.(pos.θ) + ΔXYθ[:,:,h,2] * -sin.(pos.θ)
+    ΔY = ΔXYθ[:,:,h,1] * sin.(pos.θ) + ΔXYθ[:,:,h,2] * cos.(pos.θ)
     Δθ = ΔXYθ[:,:,h,3]
 
     successor_states = zeros(size(ΔXYθ[:,:,h,:]))
@@ -405,8 +405,8 @@ function computeTrajectory(ΔXYθ, car_ID, scene, v_cmd, δ_cmd, h)
     pos = scene[car_ID].state.posG
 
     trajectory = zeros(h,3)
-    trajectory[:,1] = pos.x + ΔXYθ[v_cmd,δ_cmd,1:h,1]*cos(pos.θ) + ΔXYθ[v_cmd,δ_cmd,1:h,2]*-sin(pos.θ)
-    trajectory[:,2] = pos.y + ΔXYθ[v_cmd,δ_cmd,1:h,1]*sin(pos.θ) + ΔXYθ[v_cmd,δ_cmd,1:h,2]*cos(pos.θ)
+    trajectory[:,1] = pos.x + ΔXYθ[v_cmd,δ_cmd,1:h,1]*cos.(pos.θ) + ΔXYθ[v_cmd,δ_cmd,1:h,2]*-sin.(pos.θ)
+    trajectory[:,2] = pos.y + ΔXYθ[v_cmd,δ_cmd,1:h,1]*sin.(pos.θ) + ΔXYθ[v_cmd,δ_cmd,1:h,2]*cos.(pos.θ)
     trajectory[:,3] = pos.θ + ΔXYθ[v_cmd,δ_cmd,1:h,3]
 
     return trajectory
@@ -415,8 +415,8 @@ function checkCollisionElliptic(R,Δx,Δy,Δθ,L,W)
     b = W # buffer
     ζ = atan2(Δy,Δx)
     ψ = ζ - Δθ
-    r1 = W*L/sqrt((L*sin(ζ))^2 + (W*cos(ζ))^2) # radius of ellipse at given angle
-    r2 = W*L/sqrt((L*sin(ψ))^2 + (W*cos(ψ))^2)
+    r1 = W*L/sqrt((L*sin.(ζ))^2 + (W*cos.(ζ))^2) # radius of ellipse at given angle
+    r2 = W*L/sqrt((L*sin.(ψ))^2 + (W*cos.(ψ))^2)
     if R < r1 + r2 + b
         return true
     else
@@ -461,7 +461,7 @@ function screenCollision(hrhc, obstacleMap, tree, roadway, scene, k_level)
                                 collisionFlag[idx] = 1
                             end
                             # ψ = atan2(ΔY[idx],ΔX[idx]) - Δθ[idx]
-                            # r = W*L/sqrt((L*sin(ψ))^2 + (W*cos(ψ))^2) # radius of ellipse at given angle
+                            # r = W*L/sqrt((L*sin.(ψ))^2 + (W*cos.(ψ))^2) # radius of ellipse at given angle
                             # if R[idx]-r < W*L/8 # collision
                             #     collisionFlag[idx] = 1
                             # end
@@ -502,7 +502,7 @@ function tailgateAvoidance(hrhc, obstacleMap, tree, roadway, scene, k_level)
                     R = sqrt(ΔX.^2 + ΔY.^2)
                     ψ = atan2(ΔY,ΔX) - Δθ
 
-                    cost = (1./(W*R.*cos(ψ).^2 + 2*L*R.*sin(ψ).^2 + 1)).*(-cos(ψ).^3 + 1.1) + 1
+                    cost = (1./(W*R.*cos.(ψ).^2 + 2*L*R.*sin.(ψ).^2 + 1)).*(-cos.(ψ).^3 + 1.1) + 1
 
                 end
             end
@@ -516,8 +516,8 @@ function calculateObjective(car_ID,s₀,s,t,ϕ,T_MAX;ϕ_MAX=Float64(π),s_factor
     ϕ_norm = ϕ/ϕ_MAX
 
     #costs
-    t_cost = abs(t_norm).^6
-    ϕ_cost = abs(ϕ_norm).^6
+    t_cost = abs.(t_norm).^6
+    ϕ_cost = abs.(ϕ_norm).^6
     s_factor = 1
     s_cost = s_factor*(1-s_norm)
     A = [1 .5; #  [ϕ t] [a1 a2] [ϕ]
@@ -598,10 +598,10 @@ function plotSplineRoadway(x,y,θ,lane_width)
     perp_lines1 = zeros(2,length(x))
     perp_lines2 = zeros(2,length(x))
 
-    perp_lines1[1,:] = x + (lane_width/2.0)*sin(θ)
-    perp_lines1[2,:] = y - (lane_width/2.0)*cos(θ)
-    perp_lines2[1,:] = x - (lane_width/2.0)*sin(θ)
-    perp_lines2[2,:] = y + (lane_width/2.0)*cos(θ)
+    perp_lines1[1,:] = x + (lane_width/2.0)*sin.(θ)
+    perp_lines1[2,:] = y - (lane_width/2.0)*cos.(θ)
+    perp_lines2[1,:] = x - (lane_width/2.0)*sin.(θ)
+    perp_lines2[2,:] = y + (lane_width/2.0)*cos.(θ)
 
     # PyPlot.figure()
     # PyPlot.scatter(x,y)
@@ -681,7 +681,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     PyPlot.subplot(141)
     plotSplineRoadway(x[lo:hi],y[lo:hi],θ[lo:hi],lane_width)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
-    PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs(ϕ),edgecolor="none")
+    PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs.(ϕ),edgecolor="none")
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
     PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.axis("off")
@@ -690,7 +690,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     PyPlot.subplot(142)
     plotSplineRoadway(x[lo:hi],y[lo:hi],θ[lo:hi],lane_width)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
-    PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs(t),edgecolor="none")
+    PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs.(t),edgecolor="none")
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
     PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.axis("off")
