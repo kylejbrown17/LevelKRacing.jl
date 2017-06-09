@@ -157,7 +157,7 @@ type HRHC <: DriverModel{AccelDesang}
         hrhc.curve_ind=1
         hrhc.Δs=roadway.segments[1].lanes[1].curve[2].s-roadway.segments[1].lanes[1].curve[1].s
 #         hrhc.action_context=context
-        hrhc.action = NextState(VehicleState(VecSE2(0,0,0),0.0))
+        hrhc.action = VehicleState(VecSE2(0,0,0),0.0)
 
         # calculate semimajor axes of bounding ellipse with minimal area (for collision checking)
         W = car_width/2.0
