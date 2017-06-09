@@ -319,7 +319,7 @@ function loopProjectionKD(hrhc,scene,roadway,tree)
         end
     end
     # account for wrap-around
-    s_grid[s_grid .< scene.vehicles[hrhc.car_ID].state.posF.s] += curve[end].s + hrhc.Δs
+    s_grid[s_grid .< scene[hrhc.car_ID].state.posF.s] += curve[end].s + hrhc.Δs
 
     return s_grid, t_grid, ϕ_grid
 end
@@ -346,8 +346,8 @@ function screenTrajectory(trajectory, obstacleMap, scene, roadway, hrhc, tree, k
     #     # for all other cars...
     #     for (id,traj) in obstacleMap[k_level - 1]
     #         if id != hrhc.car_ID
-    #             state = scene.vehicles[hrhc.car_ID].state
-    #             state2 = scene.vehicles[id].state
+    #             state = scene[hrhc.car_ID].state
+    #             state2 = scene[id].state
     #             diff = state.posG - state2.posG
     #             s1,_,_ = kdProject(state.posG.x,state.posG.y,state.posG.θ,tree,roadway,hrhc)
     #             s2,_,_ = kdProject(state2.posG.x,state2.posG.y,state2.posG.θ,tree,roadway,hrhc)
@@ -388,7 +388,7 @@ function screenTrajectory(trajectory, obstacleMap, scene, roadway, hrhc, tree, k
 end
 function getSuccessorStates(ΔXYθ, car_ID, h, scene::Scene)
     """ gets legal successor_states from motion primitives library """
-    pos = scene.vehicles[car_ID].state.posG # global x,y,z of car
+    pos = scene[car_ID].state.posG # global x,y,z of car
 
     ΔX = ΔXYθ[:,:,h,1] * cos(pos.θ) + ΔXYθ[:,:,h,2] * -sin(pos.θ)
     ΔY = ΔXYθ[:,:,h,1] * sin(pos.θ) + ΔXYθ[:,:,h,2] * cos(pos.θ)
@@ -402,7 +402,7 @@ function getSuccessorStates(ΔXYθ, car_ID, h, scene::Scene)
     return successor_states
 end
 function computeTrajectory(ΔXYθ, car_ID, scene, v_cmd, δ_cmd, h)
-    pos = scene.vehicles[car_ID].state.posG
+    pos = scene[car_ID].state.posG
 
     trajectory = zeros(h,3)
     trajectory[:,1] = pos.x + ΔXYθ[v_cmd,δ_cmd,1:h,1]*cos(pos.θ) + ΔXYθ[v_cmd,δ_cmd,1:h,2]*-sin(pos.θ)
@@ -434,8 +434,8 @@ function screenCollision(hrhc, obstacleMap, tree, roadway, scene, k_level)
         # for all other cars...
         for (id,trajectory) in obstacleMap[k_level - 1]
             if id != hrhc.car_ID
-                state = scene.vehicles[hrhc.car_ID].state
-                state2 = scene.vehicles[id].state
+                state = scene[hrhc.car_ID].state
+                state2 = scene[id].state
                 diff = state.posG - state2.posG
                 s1,_,_ = kdProject(state.posG.x,state.posG.y,state.posG.θ,tree,roadway,hrhc)
                 s2,_,_ = kdProject(state2.posG.x,state2.posG.y,state2.posG.θ,tree,roadway,hrhc)
@@ -488,8 +488,8 @@ function tailgateAvoidance(hrhc, obstacleMap, tree, roadway, scene, k_level)
         # for all other cars...
         for (id,trajectory) in obstacleMap[k_level - 1]
             if id != hrhc.car_ID && id == 3
-                state = scene.vehicles[hrhc.car_ID].state
-                state2 = scene.vehicles[id].state
+                state = scene[hrhc.car_ID].state
+                state2 = scene[id].state
                 diff = state.posG - state2.posG
                 s1,_,_ = kdProject(state.posG.x,state.posG.y,state.posG.θ,tree,roadway,hrhc)
                 s2,_,_ = kdProject(state2.posG.x,state2.posG.y,state2.posG.θ,tree,roadway,hrhc)
@@ -552,7 +552,7 @@ function AutomotiveDrivingModels.observe!(hrhc::HRHC, scene::Scene, roadway::Roa
         # project successor states onto track
         s,t,ϕ = loopProjectionKD(hrhc, scene, roadway, tree)
         # optimization objective
-        objective = calculateObjective(hrhc.car_ID, scene.vehicles[hrhc.car_ID].state.posF.s,
+        objective = calculateObjective(hrhc.car_ID, scene[hrhc.car_ID].state.posF.s,
         s, t, ϕ, hrhc.T_MAX)
         tailgateCost = tailgateAvoidance(hrhc, obstacleMap, tree, roadway, scene, k_level)
         objective = objective + tailgateCost
@@ -683,7 +683,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
     PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs(ϕ),edgecolor="none")
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
-    PyPlot.scatter(scene.vehicles[hrhc.car_ID].state.posG.x, scene.vehicles[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
+    PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.axis("off")
     PyPlot.title("|phi|")
 
@@ -692,7 +692,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
     PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=abs(t),edgecolor="none")
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
-    PyPlot.scatter(scene.vehicles[hrhc.car_ID].state.posG.x, scene.vehicles[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
+    PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.axis("off")
     PyPlot.title("|t|")
 
@@ -700,7 +700,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     plotSplineRoadway(x[lo:hi],y[lo:hi],θ[lo:hi],lane_width)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
     PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=s,edgecolor="none")
-    PyPlot.scatter(scene.vehicles[hrhc.car_ID].state.posG.x, scene.vehicles[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
+    PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
     PyPlot.axis("off")
     PyPlot.title("s")
@@ -711,7 +711,7 @@ function plot_stϕ(hrhc,roadway,scene,x,y,θ,trajectory,s,t,ϕ,objective)
     # PyPlot.scatter(Pts[1,:],Pts[2,:],color="red")
     PyPlot.scatter(hrhc.successor_states[:,:,1],hrhc.successor_states[:,:,2],c=log(objective),edgecolor="none")
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
-    PyPlot.scatter(scene.vehicles[hrhc.car_ID].state.posG.x, scene.vehicles[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
+    PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="k", edgecolors="none",s=40)
     PyPlot.axis("off")
     PyPlot.title("objective")
 end
@@ -733,9 +733,9 @@ function plotHRHCInfo(hrhc,models,scene,roadway,trajectory,cmd,x,y,Θ,s,t,ϕ,obj
     PyPlot.scatter(roadway.segments[1].lanes[1].curve[hrhc.curve_ind].pos.x, roadway.segments[1].lanes[1].curve[hrhc.curve_ind].pos.y, c="white", s=40)
     for (id,car) in models
         if id == hrhc.car_ID
-            PyPlot.scatter(scene.vehicles[id].state.posG.x,scene.vehicles[id].state.posG.y,c="red",s=20)
+            PyPlot.scatter(scene[id].state.posG.x,scene[id].state.posG.y,c="red",s=20)
         else
-            PyPlot.scatter(scene.vehicles[id].state.posG.x,scene.vehicles[id].state.posG.y,c="blue",s=20)
+            PyPlot.scatter(scene[id].state.posG.x,scene[id].state.posG.y,c="blue",s=20)
         end
     end
     PyPlot.axis("off")
@@ -743,7 +743,7 @@ function plotHRHCInfo(hrhc,models,scene,roadway,trajectory,cmd,x,y,Θ,s,t,ϕ,obj
 
     PyPlot.subplot(222)
     plotSplineRoadway(x[lo:hi],y[lo:hi],Θ[lo:hi],lane_width)
-    PyPlot.scatter(scene.vehicles[hrhc.car_ID].state.posG.x, scene.vehicles[hrhc.car_ID].state.posG.y, c="red", edgecolors="none",s=40)
+    PyPlot.scatter(scene[hrhc.car_ID].state.posG.x, scene[hrhc.car_ID].state.posG.y, c="red", edgecolors="none",s=40)
     PyPlot.scatter(hrhc.successor_states[:,:,1], hrhc.successor_states[:,:,2],c=log(objective),edgecolors="none")
     PyPlot.scatter(hrhc.successor_states[cmd[1],cmd[2],1], hrhc.successor_states[cmd[1],cmd[2],2],c="white",s=40)
     PyPlot.plot(trajectory[:,1],trajectory[:,2],color="red")
