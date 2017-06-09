@@ -533,7 +533,7 @@ function AutomotiveDrivingModels.observe!(hrhc::HRHC, scene::Scene, roadway::Roa
     time step
     """
 
-    state = scene.vehicles[hrhc.car_ID].state
+    state = scene[hrhc.car_ID].state
     hrhc.curve_ind = state.posF.roadind.ind.i
     v = state.v # current v
     hrhc.v = v
